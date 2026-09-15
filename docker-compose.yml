@@ -1,0 +1,80 @@
+# Local development dependencies. Production runs managed equivalents.
+services:
+  mongo:
+    # A single-node replica set, not a bare `mongod`. Two reasons:
+    #   * Change streams and multi-document transactions require an oplog,
+    #     which only a replica set has. Starting standalone means those
+    #     features fail at runtime rather than at startup.
+    #   * The connection string then works unchanged against a real cluster.
+    image: mongo:7
+    container_name: resx-mongo
+    command: ["--replSet", "rs0", "--bind_ip_all", "--quiet"]
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodata:/data/db
+    healthcheck:
+      # Initiates the replica set on first boot, then reports healthy once it
+      # has a primary. `hello().isWritablePrimary` is the check that matters —
+      # a reachable server that has not yet elected a primary rejects writes.
+      test: >
+        mongosh --quiet --eval "
+          try { rs.status() } catch (e) {
+            rs.initiate({_id:'rs0',members:[{_id:0,host:'localhost:27017'}]})
+          };
+          db.hello().isWritablePrimary || quit(1)
+        "
+      interval: 5s
+      timeout: 10s
+      retries: 20
+      start_period: 10s
+
+  mongo-express:
+    # A browser view of the collections. Behind a profile because it exposes
+    # every document with no authentication and must never run in production.
+    image: mongo-express:1
+    container_name: resx-mongo-express
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://mongo:27017/?replicaSet=rs0
+      ME_CONFIG_BASICAUTH: "false"
+    ports:
+      - "8081:8081"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    profiles: ["tools"]
+
+  redis:
+    image: redis:7-alpine
+    container_name: resx-redis
+    ports:
+      - "6379:6379"
+    # Rate-limit counters and the job queue. Persistence is on so a restart
+    # does not reset every limiter to zero.
+    command: redis-server --appendonly yes --maxmemory 256mb --maxmemory-policy allkeys-lru
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  clamav:
+    # Every upload is scanned in quarantine before it is promoted into a
+    # workspace bucket. Optional locally; required in production.
+    image: clamav/clamav:stable
+    container_name: resx-clamav
+    ports:
+      - "3310:3310"
+    profiles: ["full"]
+    healthcheck:
+      test: ["CMD-SHELL", "clamdcheck.sh || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 120s
+
+volumes:
+  mongodata:
+  redisdata:

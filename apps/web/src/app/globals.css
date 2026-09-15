@@ -1,0 +1,282 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+/* ---------------------------------------------------------------------------
+   RESX theme
+   Tokens per docs/06-DESIGN-SYSTEM.md. The chart palette is VALIDATED — see
+   the validator results recorded in that document. Do not substitute a series
+   colour by eye; re-run scripts/validate_palette.js after any change.
+--------------------------------------------------------------------------- */
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-geist-mono);
+  --font-heading: var(--font-sans);
+
+  --color-sidebar-ring: var(--sidebar-ring);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar: var(--sidebar);
+
+  /* Series palette — eight fixed slots, assigned in order, never cycled. */
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-chart-6: var(--chart-6);
+  --color-chart-7: var(--chart-7);
+  --color-chart-8: var(--chart-8);
+
+  /* Status palette — reserved. Never reused as a series colour. */
+  --color-good: var(--good);
+  --color-warning: var(--warning);
+  --color-serious: var(--serious);
+  --color-critical: var(--critical);
+
+  /* Sequential ramp (magnitude) and diverging poles (polarity). */
+  --color-seq-100: var(--seq-100);
+  --color-seq-250: var(--seq-250);
+  --color-seq-400: var(--seq-400);
+  --color-seq-550: var(--seq-550);
+  --color-seq-700: var(--seq-700);
+  --color-diverge-neutral: var(--diverge-neutral);
+
+  --color-ring: var(--ring);
+  --color-input: var(--input);
+  --color-border: var(--border);
+  --color-destructive: var(--destructive);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent: var(--accent);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-secondary: var(--secondary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary: var(--primary);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-popover: var(--popover);
+  --color-card-foreground: var(--card-foreground);
+  --color-card: var(--card);
+
+  /* Type scale — 13px is the workhorse. Nothing below 11px. */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.375rem;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.5rem;
+
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* --- Light mode ---------------------------------------------------------- */
+:root {
+  --radius: 0.75rem;
+  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+
+  --background: #fcfcfb;
+  --foreground: #0b0b0b;
+  --card: #ffffff;
+  --card-foreground: #0b0b0b;
+  --popover: #ffffff;
+  --popover-foreground: #0b0b0b;
+
+  --primary: #0b0b0b;
+  --primary-foreground: #fcfcfb;
+  --secondary: #f4f4f2;
+  --secondary-foreground: #0b0b0b;
+  --muted: #f4f4f2;
+  --muted-foreground: #52514e;
+  --accent: #f4f4f2;
+  --accent-foreground: #0b0b0b;
+
+  --destructive: #d03b3b;
+  --border: #e6e6e3;
+  --input: #e6e6e3;
+  --ring: #2a78d6;
+
+  /* Validated: light surface #fcfcfb, adjacent pairs, 8 slots — all checks
+     pass. Contrast relief applies to chart-3 (2.74), chart-4 (2.11) and
+     chart-5 (2.62): any light-mode chart using them ships visible direct
+     labels or the table view. */
+  --chart-1: #2a78d6;
+  --chart-2: #eb6834;
+  --chart-3: #1baf7a;
+  --chart-4: #eda100;
+  --chart-5: #e87ba4;
+  --chart-6: #008300;
+  --chart-7: #4a3aa7;
+  --chart-8: #e34948;
+
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+
+  --seq-100: #cde2fb;
+  --seq-250: #86b6ef;
+  --seq-400: #3987e5;
+  --seq-550: #1c5cab;
+  --seq-700: #0d366b;
+  --diverge-neutral: #f0efec;
+
+  --sidebar: #ffffff;
+  --sidebar-foreground: #0b0b0b;
+  --sidebar-primary: #0b0b0b;
+  --sidebar-primary-foreground: #fcfcfb;
+  --sidebar-accent: #f4f4f2;
+  --sidebar-accent-foreground: #0b0b0b;
+  --sidebar-border: #e6e6e3;
+  --sidebar-ring: #2a78d6;
+}
+
+/* --- Dark mode: the default, and a designed mode rather than an inversion -- */
+.dark {
+  --background: #08080a;
+  --foreground: #fafafa;
+  --card: #0e0e11;
+  --card-foreground: #fafafa;
+  --popover: #0e0e11;
+  --popover-foreground: #fafafa;
+
+  --primary: #fafafa;
+  --primary-foreground: #08080a;
+  --secondary: #16161a;
+  --secondary-foreground: #fafafa;
+  --muted: #16161a;
+  --muted-foreground: #a1a1aa;
+  --accent: #1a1a1f;
+  --accent-foreground: #fafafa;
+
+  --destructive: #e66767;
+  --border: #1f1f24;
+  --input: #26262c;
+  --ring: #3987e5;
+
+  /* Validated: dark surface #0e0e11, adjacent pairs, 8 slots — ALL CHECKS
+     PASS. Worst adjacent CVD ΔE 8.4 (protan); worst normal-vision ΔE 19.3;
+     every slot >= 3:1 against the card surface. First three slots also clear
+     all-pairs, which is why scatter and small-multiple forms cap at three. */
+  --chart-1: #3987e5;
+  --chart-2: #d95926;
+  --chart-3: #199e70;
+  --chart-4: #c98500;
+  --chart-5: #d55181;
+  --chart-6: #008300;
+  --chart-7: #9085e9;
+  --chart-8: #e66767;
+
+  /* Status steps are fixed across modes — all four clear 3:1 on dark. */
+  --good: #0ca30c;
+  --warning: #fab219;
+  --serious: #ec835a;
+  --critical: #d03b3b;
+
+  --seq-100: #cde2fb;
+  --seq-250: #86b6ef;
+  --seq-400: #3987e5;
+  --seq-550: #1c5cab;
+  --seq-700: #184f95;
+  --diverge-neutral: #383835;
+
+  --sidebar: #0b0b0e;
+  --sidebar-foreground: #fafafa;
+  --sidebar-primary: #fafafa;
+  --sidebar-primary-foreground: #08080a;
+  --sidebar-accent: #16161a;
+  --sidebar-accent-foreground: #fafafa;
+  --sidebar-border: #1f1f24;
+  --sidebar-ring: #3987e5;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  html {
+    @apply font-sans;
+  }
+
+  /* Figures stack in columns across this product, so proportional digits are
+     never acceptable — they make a column impossible to scan. */
+  .tabular,
+  th,
+  td,
+  [data-slot="kpi-value"],
+  [data-slot="metric"] {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  /* Recharts injects a focus outline on the surface itself; the ring belongs
+     on interactive elements, not on the plot area. */
+  .recharts-wrapper:focus,
+  .recharts-surface:focus {
+    outline: none;
+  }
+}
+
+@layer utilities {
+  /* Texture fill for the CVD / print / forced-colors case. Applied at 45deg
+     and 135deg so two series remain distinguishable without colour. */
+  .texture-45 {
+    background-image: repeating-linear-gradient(
+      45deg,
+      color-mix(in oklab, currentColor 100%, transparent) 0 1px,
+      transparent 1px 4px
+    );
+  }
+
+  .texture-135 {
+    background-image: repeating-linear-gradient(
+      135deg,
+      color-mix(in oklab, currentColor 100%, transparent) 0 1px,
+      transparent 1px 4px
+    );
+  }
+
+  .hairline-t {
+    box-shadow: inset 0 1px 0 0 var(--border);
+  }
+}
+
+/* Motion is opt-out at the platform level, not per component. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

@@ -1,0 +1,10 @@
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+.claude/
+.next/
+node_modules/
+next-env.d.ts
+*.tsbuildinfo
+.env*
+!.env.example

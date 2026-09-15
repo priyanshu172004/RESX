@@ -1,0 +1,90 @@
+# ---------------------------------------------------------------------------
+# AI / agent tooling — never committed, never published.
+# `next dev` regenerates AGENTS.md (and its CLAUDE.md pointer) on every start
+# via node_modules/next/dist/server/lib/generate-agent-files.js, so deleting
+# them is not enough on its own — these patterns are what keeps them out of
+# the repository and off GitHub for good.
+# ---------------------------------------------------------------------------
+CLAUDE.md
+CLAUDE.local.md
+AGENTS.md
+.claude/
+.claude*
+.cursor/
+.cursorrules
+.aider*
+.windsurfrules
+.github/copilot-instructions.md
+
+# --- Secrets ---------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+!**/public/**/*.key
+secrets/
+credentials.json
+
+# --- Node / Next -----------------------------------------------------------
+node_modules/
+.next/
+out/
+build/
+dist/
+.turbo/
+*.tsbuildinfo
+next-env.d.ts
+.pnpm-store/
+.pnpm-debug.log*
+npm-debug.log*
+yarn-error.log*
+
+# --- Python ----------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+.Python
+*.egg-info/
+.eggs/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+.tox/
+
+# --- Data, uploads, artifacts ---------------------------------------------
+# Tenant documents and extracted datasets never belong in version control.
+storage/
+uploads/
+quarantine/
+*.parquet
+*.duckdb
+*.sqlite3
+benchmarks/gold/**/*.pdf
+benchmarks/gold/**/*.xlsx
+!benchmarks/gold/**/labels.json
+artifacts/
+.chroma/
+
+# --- Infra / local ---------------------------------------------------------
+docker-compose.override.yml
+*.log
+logs/
+.pgdata/
+.redisdata/
+
+# --- Editors & OS ----------------------------------------------------------
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini

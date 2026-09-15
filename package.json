@@ -1,0 +1,28 @@
+{
+  "name": "resx",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Autonomous business research and data analytics agent. Every number cited, computed, and defended.",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "pnpm --filter web dev",
+    "build": "pnpm --filter web build",
+    "start": "pnpm --filter web start",
+    "lint": "pnpm --filter web lint",
+    "typecheck": "pnpm --filter web exec tsc --noEmit",
+    "api:dev": "python scripts/dev-api.py",
+    "api:install": "cd services/api && pip install -e \".[dev]\"",
+    "api:lint": "cd services/api && ruff check app && ruff format --check app",
+    "api:typecheck": "cd services/api && mypy app",
+    "api:test": "cd services/api && pytest -q",
+    "infra:up": "docker compose up -d",
+    "infra:down": "docker compose down",
+    "check": "pnpm typecheck && pnpm lint && pnpm api:lint && pnpm api:typecheck",
+    "api:dev:force": "python scripts/dev-api.py --force",
+    "api:dev:raw": "cd services/api && uvicorn app.main:app --reload --port 8000 --no-server-header",
+    "test": "pnpm --filter web test"
+  }
+}

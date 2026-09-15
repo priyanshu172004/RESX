@@ -1,0 +1,10 @@
+{
+  "document": "monthly_revenue_fy2025.csv",
+  "declares_scale": false,
+  "expected_scale_factor": "1",
+  "expect_undeclared_scale_flag": true,
+  "note": "Figures are in thousands in reality, but the document says so nowhere. The system must read face value and flag the undeclared scale rather than infer a multiplier.",
+  "monthly_revenue_total_facevalue": 48920,
+  "monthly_revenue_total_if_thousands": "48920000",
+  "reconciles_with_annual_report_in_thousands": true
+}

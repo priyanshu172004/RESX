@@ -1,0 +1,163 @@
+name: CI
+
+# Every check in here passes on the current tree. That is the point: a CI file
+# whose steps are known to fail teaches everyone to ignore the red cross, so
+# nothing is added here until it is green, and `mypy` is tracked separately
+# below rather than being allowed to fail silently in the same job.
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  # A new push supersedes the previous run on the same ref.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # The suite is hermetic by design (see tests/conftest.py) but the settings
+  # object still validates at import, so give it values that are obviously not
+  # real rather than letting it find a developer's .env.
+  RESX_ENV: development
+  STORE_BACKEND: sqlite
+  RESX_SECRET_KEY: ci-not-a-real-secret-key-0000000000000000
+  FIELD_ENCRYPTION_KEY: ci-not-a-real-field-key-000000000000000000
+
+jobs:
+  api:
+    name: API — tests, lint, format
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: services/api
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: services/api/pyproject.toml
+
+      - name: Install Tesseract
+        # A system package, not a pip one. Without it the OCR tests skip
+        # themselves rather than fail — which would mean the scanned-PDF path
+        # is never exercised on CI, and that path is where four separate bugs
+        # have already hidden.
+        run: sudo apt-get update && sudo apt-get install -y tesseract-ocr
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Lint
+        run: ruff check app tests
+
+      - name: Format
+        run: ruff format --check app tests
+
+      - name: Tests
+        run: pytest -q
+
+      - name: Confirm the OCR tests actually ran
+        # `pytest.mark.skipif` on a missing binary is correct locally and
+        # dangerous on CI: the suite would pass green with the whole OCR path
+        # untested. This fails if they skipped.
+        run: |
+          python - <<'PY'
+          from app.ingest.ocr import is_available
+          if not is_available():
+              raise SystemExit(
+                  "Tesseract is missing on CI, so the OCR tests skipped. "
+                  "The scanned-PDF path was not exercised."
+              )
+          print("Tesseract present; OCR tests ran.")
+          PY
+
+  types:
+    name: API — types
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/api
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: services/api/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: mypy
+        run: mypy app
+
+  web:
+    name: Web — typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: apps/web
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+        working-directory: .
+
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+      - name: Lint
+        run: pnpm exec eslint .
+
+      - name: Test
+        # Runs before the build: a failing unit test should not wait out a
+        # full Next.js compile before it reports.
+        run: pnpm exec vitest run
+
+      - name: Build
+        run: pnpm exec next build
+        env:
+          # The build must not depend on a developer's API being reachable.
+          NEXT_PUBLIC_API_URL: http://localhost:8000
+
+  benchmark:
+    name: Accuracy benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: services/api
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+          cache-dependency-path: services/api/pyproject.toml
+      - run: pip install -e ".[dev]"
+      - name: Score the fixtures
+        # Runs without any API key: it scores extraction, chunking, anchor
+        # completeness, scale detection, retrieval and the resolver, none of
+        # which need a model. The four agent-dependent metrics are reported as
+        # unmeasured rather than guessed, and the harness exits non-zero only
+        # if a *measured* gate fails.
+        run: python ../../benchmarks/score.py

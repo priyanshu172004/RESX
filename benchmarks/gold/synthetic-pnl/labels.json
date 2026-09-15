@@ -1,0 +1,110 @@
+{
+  "document": "synthetic_annual_report_fy2025.pdf",
+  "currency": "USD",
+  "scale_factor": "1000",
+  "scale_phrase": "in thousands",
+  "figures": {
+    "current_year": {
+      "revenue": "48920000",
+      "cogs": "28471000",
+      "gross_profit": "20449000",
+      "opex": "9640000",
+      "operating_income": "10809000",
+      "other_income": "120000",
+      "tax": "2185000",
+      "net_income": "8744000"
+    },
+    "prior_year": {
+      "revenue": "43485000",
+      "cogs": "24090000",
+      "gross_profit": "19395000",
+      "opex": "8910000",
+      "operating_income": "10485000",
+      "other_income": "95000",
+      "tax": "2116000",
+      "net_income": "8464000"
+    },
+    "balance_sheet": {
+      "assets": "71240000",
+      "liabilities": "39115000",
+      "equity": "32125000"
+    },
+    "cash_flow": {
+      "opening_cash": "18104000",
+      "net_cash_flow": "-3720000",
+      "closing_cash": "14384000"
+    },
+    "segments": {
+      "Industrial": "22310000",
+      "Consumer": "15845000",
+      "Services": "10765000"
+    }
+  },
+  "derived": {
+    "gross_margin_pct": "41.80",
+    "prior_gross_margin_pct": "44.60",
+    "gross_margin_change_pts": "-2.80",
+    "revenue_growth_pct": "12.50",
+    "monthly_burn": "310000",
+    "runway_months": "46.4",
+    "top_customer_concentration_pct": "23.0"
+  },
+  "identities_that_must_hold": [
+    "revenue - cogs == gross_profit",
+    "gross_profit - opex == operating_income",
+    "operating_income + other_income - tax == net_income",
+    "assets == liabilities + equity",
+    "opening_cash + net_cash_flow == closing_cash",
+    "sum(segments) == revenue"
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "question": "What was total revenue in FY2025?",
+      "answer": "48920000",
+      "unit": "USD",
+      "gold_page": 2,
+      "tolerance_rel": 0.005
+    },
+    {
+      "id": "q2",
+      "question": "What was the gross margin in FY2025?",
+      "answer": "41.80",
+      "unit": "percent",
+      "gold_page": 2,
+      "tolerance_rel": 0.01
+    },
+    {
+      "id": "q3",
+      "question": "What is the monthly cash burn?",
+      "answer": "310000",
+      "unit": "USD",
+      "gold_page": 4,
+      "tolerance_rel": 0.01
+    },
+    {
+      "id": "q4",
+      "question": "How many months of runway remain?",
+      "answer": "46.4",
+      "unit": "months",
+      "gold_page": 4,
+      "tolerance_rel": 0.02
+    },
+    {
+      "id": "q5",
+      "question": "What share of revenue came from the largest customer?",
+      "answer": "23.0",
+      "unit": "percent",
+      "gold_page": 5,
+      "tolerance_rel": 0.01
+    },
+    {
+      "id": "q6",
+      "question": "Did gross margin improve or deteriorate year over year?",
+      "answer": "deteriorated",
+      "unit": "direction",
+      "gold_page": 2,
+      "tolerance_rel": 0.0
+    }
+  ]
+}
