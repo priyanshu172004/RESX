@@ -255,7 +255,14 @@ class Settings(BaseSettings):
     # --- Sandbox: the least-trusted component in the system ---
     sandbox_image: str = "resx/sandbox:0.1.0"
     sandbox_cpu_seconds: int = 2
-    sandbox_memory_mb: int = 512
+    #: Address space, not resident memory: this becomes `RLIMIT_AS`, which
+    #: counts every reservation a process makes. numpy and pandas reserve far
+    #: more than they ever touch, so 512 MB — a sane-looking number for "how
+    #: much memory should a computation get" — killed the interpreter while it
+    #: was still importing them. It only ever worked because the machines it
+    #: was tried on were Windows, where `resource` does not exist and no limit
+    #: was applied at all. This is a runaway guard, not a working budget.
+    sandbox_memory_mb: int = 2048
     sandbox_wall_timeout_seconds: int = 30
     sandbox_network: Literal["none"] = "none"
 

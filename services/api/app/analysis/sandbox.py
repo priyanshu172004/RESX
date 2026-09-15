@@ -108,6 +108,27 @@ _BOOTSTRAP = textwrap.dedent(
     CPU_SECONDS = int(sys.argv[4])
     MEMORY_MB = int(sys.argv[5])
 
+    # One thread per BLAS backend, set before numpy is imported.
+    #
+    # Two reasons, and the first is why CI failed. RLIMIT_AS below caps
+    # *address space*, not resident memory, and every OpenBLAS/OpenMP worker
+    # reserves its own arena on import -- so a machine with many cores
+    # reserves hundreds of megabytes before a single array exists, and the
+    # process is killed importing pandas. The developer machines where this
+    # passed were Windows, where `resource` does not exist and no limit was
+    # ever applied.
+    #
+    # The second reason stands on its own: a computation that has to be
+    # reproducible should not depend on how many cores the box has.
+    for _var in (
+        "OMP_NUM_THREADS",
+        "OPENBLAS_NUM_THREADS",
+        "MKL_NUM_THREADS",
+        "NUMEXPR_NUM_THREADS",
+        "VECLIB_MAXIMUM_THREADS",
+    ):
+        os.environ[_var] = "1"
+
     # Import paths are handed over explicitly by the parent rather than being
     # rediscovered from the environment. Relying on env vars is fragile: the
     # minimal env below has no APPDATA, and on Windows that alone makes the
@@ -297,6 +318,50 @@ class Sandbox(ABC):
     ) -> ComputationRecord: ...
 
 
+def _describe_exit(returncode: int) -> str:
+    """Turn a process exit into something a reader can act on.
+
+    A negative return code is a signal, and "SandboxError: the process
+    produced no result envelope (exit -9)" is true and useless — it does not
+    say the CPU ceiling fired, which is the single most likely reason a
+    computation of this kind dies.
+
+    It also hid a platform difference for a long time. `RLIMIT_CPU` is POSIX
+    only, so on Windows an infinite loop runs until the wall clock stops it
+    and the caller sees a timeout; on Linux the CPU limit fires first and the
+    caller saw an unexplained signal. Same cause, two different stories.
+    """
+    if returncode >= 0:
+        return f"SandboxError: the process produced no result envelope (exit {returncode})"
+
+    import signal as _signal
+
+    fired = -returncode
+    # Built from the signals this platform actually has: SIGKILL and SIGXCPU do
+    # not exist on Windows, and a dict keyed on a missing one would collapse
+    # every entry onto `None`.
+    named = {
+        getattr(_signal, "SIGXCPU", None): (
+            "TimeoutError: exceeded the CPU-time ceiling for this sandbox"
+        ),
+        getattr(_signal, "SIGKILL", None): (
+            "TimeoutError: the sandbox was killed, which for this backend means "
+            "it exceeded its CPU-time or memory ceiling"
+        ),
+        getattr(_signal, "SIGSEGV", None): (
+            "SandboxError: the computation crashed the interpreter (segmentation fault)"
+        ),
+    }
+    described = {k: v for k, v in named.items() if k is not None}.get(fired)
+    if described:
+        return described
+    try:
+        name = _signal.Signals(fired).name
+    except (ValueError, AttributeError):
+        name = str(fired)
+    return f"SandboxError: the sandbox was terminated by signal {name}"
+
+
 class LocalSubprocessSandbox(Sandbox):
     """Development backend. **Not** a security boundary — see the module docstring."""
 
@@ -306,7 +371,12 @@ class LocalSubprocessSandbox(Sandbox):
         self,
         *,
         cpu_seconds: int = 2,
-        memory_mb: int = 512,
+        # Address space, not resident memory -- this becomes `RLIMIT_AS`, which
+        # counts reservations. numpy and pandas reserve far more than they ever
+        # touch, so 512 killed the interpreter mid-import. The Docker backend
+        # below keeps 512 because `--memory` limits RSS, which is the number
+        # that reads as "how much memory may this use".
+        memory_mb: int = 2048,
         wall_timeout_seconds: int = 30,
     ) -> None:
         self.cpu_seconds = cpu_seconds
@@ -436,10 +506,7 @@ class LocalSubprocessSandbox(Sandbox):
                     duration_ms=duration,
                     image_digest=self.image_digest,
                     ok=False,
-                    error=(
-                        "SandboxError: the process produced no result envelope "
-                        f"(exit {proc.returncode})"
-                    ),
+                    error=_describe_exit(proc.returncode),
                 )
 
             envelope = json.loads(raw[marker + len(_SENTINEL) :].splitlines()[0])
