@@ -130,7 +130,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          # pnpm 11.21 refuses to run on Node 20 ("requires at least Node.js
+          # v22.13"), and package.json pins that pnpm through `packageManager`.
+          node-version: "22"
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 

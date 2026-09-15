@@ -11,6 +11,10 @@ requires-python = ">=3.10"
 dependencies = [
   # --- Web ---
   "fastapi>=0.115",
+  # Imported directly (`starlette.concurrency`, `starlette.responses`), so it
+  # is declared rather than relied on as a FastAPI transitive. A dependency you
+  # import is a dependency you own.
+  "starlette>=0.41",
   "uvicorn[standard]>=0.32",
   "pydantic>=2.9",
   "pydantic-settings>=2.6",
@@ -27,6 +31,11 @@ dependencies = [
   "python-magic>=0.4.27; sys_platform != 'win32'",
 
   # --- Data ---
+  # The production store. It was never declared — `app/store/mongo.py` has
+  # imported it since it was written, and every environment that worked had it
+  # installed for some other reason. A clean install had no MongoDB backend at
+  # all, and `import pymongo` failed at collection time.
+  "pymongo>=4.9",
   "sqlalchemy[asyncio]>=2.0.35",
   "asyncpg>=0.30",
   "alembic>=1.13",
@@ -40,6 +49,9 @@ dependencies = [
   "scipy>=1.14",
   "statsmodels>=0.14",
   "matplotlib>=3.9",
+  # PDF export (`app/reporting/export.py`) and the gold-corpus generator both
+  # import it. Also never declared.
+  "reportlab>=4.2",
   "pyarrow>=17.0",
   "pint>=0.24",
   "rapidfuzz>=3.10",
