@@ -31,9 +31,20 @@ GENERATOR = GOLD_DIR / "generate.py"
 
 #: One file from each corpus the generator produces. Their presence is what
 #: "already generated" means.
+#:
+#: These are the **PDFs**, not the `labels.json` files beside them, and the
+#: difference is the whole point. `.gitignore` excludes
+#: `benchmarks/gold/**/*.pdf` — the corpora are generated, not committed — while
+#: the labels are committed. Checking the labels therefore reported "already
+#: generated" on a fresh checkout that had no PDFs at all, the generator never
+#: ran, and every test that opens one died with `FileNotFoundError`. It passed
+#: locally forever because a developer's working tree has both.
+#:
+#: The marker has to be a file that is absent exactly when generation is
+#: needed, which means the artefact, never the input.
 EXPECTED = (
-    GOLD_DIR / "synthetic-pnl" / "labels.json",
-    GOLD_DIR / "adversarial" / "labels.json",
+    GOLD_DIR / "synthetic-pnl" / "synthetic_annual_report_fy2025.pdf",
+    GOLD_DIR / "adversarial" / "adversarial_disclosures.pdf",
 )
 
 

@@ -1,4 +1,16 @@
 packages:
   - "apps/*"
+
+# pnpm refuses to run a dependency's install scripts unless it is allowed here,
+# and exits NON-ZERO when it has blocked any — so an unanswered entry fails CI
+# at the install step, before a single test runs. The placeholders this file
+# shipped with ("set this to true or false") were exactly that.
+#
+# Both of these genuinely need their scripts: esbuild's postinstall fetches the
+# platform binary vitest executes, and unrs-resolver is eslint's native
+# resolver. Answered explicitly rather than by turning the check off, because
+# the check is what stops an arbitrary transitive package running code on every
+# install.
 allowBuilds:
-  unrs-resolver: set this to true or false
+  esbuild: true
+  unrs-resolver: true

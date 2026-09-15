@@ -154,6 +154,15 @@ jobs:
           cache: pip
           cache-dependency-path: services/api/pyproject.toml
       - run: pip install -e ".[dev]"
+      - name: Generate the gold corpus
+        # `.gitignore` excludes benchmarks/gold/**/*.pdf — the corpora are
+        # generated, not committed — so a fresh checkout has the labels and
+        # none of the documents they describe. The test suite regenerates them
+        # through conftest; this job calls the generator directly because it
+        # does not run pytest.
+        run: python ../../benchmarks/gold/generate.py
+        working-directory: services/api
+
       - name: Score the fixtures
         # Runs without any API key: it scores extraction, chunking, anchor
         # completeness, scale detection, retrieval and the resolver, none of

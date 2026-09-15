@@ -1,3 +1,12 @@
+# pnpm reads the nearest workspace file, so CI's later steps — which run with
+# working-directory: apps/web — read this one rather than the root. It shipped
+# with an unanswered placeholder ("set this to true or false"), and pnpm exits
+# NON-ZERO whenever it has blocked a build script, so every command run from
+# this directory failed before doing any work.
+#
+# esbuild's postinstall fetches the platform binary vitest executes, so it has
+# to be allowed. sharp and unrs-resolver stay off: nothing here needs them.
 allowBuilds:
+  esbuild: true
   sharp: false
   unrs-resolver: false
