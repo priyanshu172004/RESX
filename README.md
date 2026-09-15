@@ -1,4 +1,4 @@
-# RESX
+# RESX - Teamwork
 
 **An autonomous business research and data analytics agent.** Upload a corpus of
 business documents, ask a question, and get an executive report where every number
