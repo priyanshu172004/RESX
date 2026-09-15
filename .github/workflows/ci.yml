@@ -63,8 +63,14 @@ jobs:
         run: |
           set -o pipefail
           pytest -q --tb=short -rf 2>&1 | tee /tmp/pytest.log || {
-            tail -n 30 /tmp/pytest.log | while IFS= read -r line; do
+            grep -E "^(FAILED|ERROR)" /tmp/pytest.log | head -n 25 | while IFS= read -r line; do
               echo "::error title=pytest::$line"
+            done
+            grep -E "^E " /tmp/pytest.log | head -n 20 | while IFS= read -r line; do
+              echo "::error title=assertion::$line"
+            done
+            tail -n 3 /tmp/pytest.log | while IFS= read -r line; do
+              echo "::error title=summary::$line"
             done
             exit 1
           }
@@ -194,4 +200,11 @@ jobs:
         # which need a model. The four agent-dependent metrics are reported as
         # unmeasured rather than guessed, and the harness exits non-zero only
         # if a *measured* gate fails.
-        run: python ../../benchmarks/score.py
+        run: |
+          set -o pipefail
+          python ../../benchmarks/score.py 2>&1 | tee /tmp/score.log || {
+            tail -n 40 /tmp/score.log | while IFS= read -r line; do
+              echo "::error title=benchmark::$line"
+            done
+            exit 1
+          }
